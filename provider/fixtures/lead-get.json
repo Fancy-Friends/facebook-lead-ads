@@ -1,0 +1,21 @@
+{
+  "$comment": "A lead as Meta actually returns one. field_data is a LIST of { name, values } and every value is a STRING -- a phone number comes back as text, not a number, and so does a zip code. A faker that returned a map, or that typed those as numbers, would let an author build a flow that works on the canvas and breaks on the first real lead.",
+  "operation": "lead_get",
+
+  "response": {
+    "id": { "$fake": "digits", "length": 15 },
+    "created_time": "2026-08-24T09:15:00+0000",
+    "ad_id": { "$fake": "digits", "length": 15 },
+    "form_id": { "$fake": "digits", "length": 15 },
+    "field_data": [
+      { "name": "full_name", "values": ["Ada Lovelace"] },
+      { "name": "email", "values": ["ada@example.test"] },
+      { "name": "phone_number", "values": ["+15550100"] },
+      {
+        "name": "what_are_you_interested_in",
+        "values": ["Enterprise plan"],
+        "$comment": "A CUSTOM question, included deliberately. The first three names are Meta's standard ones and are stable; everything after them is whatever the advertiser typed when building the form, lower-cased and underscored. An author who assumes a fixed set of names has assumed something about somebody else's form."
+      }
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "$comment": "THE hand-written part. Four packages -- ui, js, php, py -- are generated from this directory and are never edited. Meta publishes no machine-readable spec for the Graph API, so every fact here is read from its own reference documentation.",
+
+  "connectorApi": 1,
+
+  "service": "facebook_lead_ads",
+  "title": "Facebook Lead Ads",
+  "domain": "marketing",
+  "docs": "https://developers.facebook.com/docs/marketing-api/guides/lead-ads/retrieving",
+
+  "auth": "oauth2",
+  "requires": ["pageAccessToken", "appSecret", "clientId", "clientSecret"],
+
+  "authorize": {
+    "kind": "query",
+    "param": "access_token",
+    "credential": "pageAccessToken",
+    "$comment": "Same as facebook-pages: Meta takes the token as a QUERY PARAMETER, and appsecret_proof has to go in the query regardless, so both live in one place and a request stays readable in a log.",
+    "proof": {
+      "param": "appsecret_proof",
+      "algorithm": "sha256",
+      "over": "pageAccessToken",
+      "keyCredential": "appSecret",
+      "encoding": "hex",
+      "$comment": "hash_hmac('sha256', $access_token, $app_secret) -- an HMAC over the TOKEN, KEYED BY THE SECRET. The two are one swap apart and both orders produce a plausible 64-character hex string, which is why the parity suite pins a known vector rather than checking the shape."
+    }
+  },
+
+  "oauth": {
+    "flow": "authorization_code",
+    "authorizeUrl": "https://www.facebook.com/v25.0/dialog/oauth",
+    "tokenUrl": "https://graph.facebook.com/v25.0/oauth/access_token",
+    "scopes": [
+      "leads_retrieval",
+      "pages_manage_ads",
+      "pages_show_list",
+      "pages_read_engagement",
+      "pages_manage_metadata"
+    ],
+    "accessTokenCredential": "pageAccessToken",
+    "refreshTokenCredential": null,
+    "refreshTokenRotates": false,
+    "accessTokenTtlSeconds": 5184000,
+    "$refreshTokenRotates": "There is nothing to rotate -- refreshTokenCredential is null. It is stated anyway because a reader who sees only `null` should not have to work out whether the question was skipped or does not apply, and the two look identical from outside.",
+    "$scopeComment": "FIVE, and each is load-bearing. leads_retrieval reads a lead's field_data -- without it the lead resolves with the personal data omitted rather than failing, which is the reassuring failure. pages_manage_ads is what Meta requires alongside it for lead access. pages_manage_metadata is what lets the app SUBSCRIBE to the Page's leadgen webhook; without it the trigger never fires and nothing reports why. pages_show_list and pages_read_engagement are the standard Page pair. All are subject to App Review, and leads_retrieval additionally requires the app to pass Meta's Business Verification.",
+    "$comment": "The PAGE token, as with facebook-pages. Leads belong to a Page's forms, and Meta requires the token to be held by somebody who can advertise on the ad account. pageAccessToken is `account`-scoped -- one per connected Page -- while appSecret and the client pair are `provider`, one per installation. Getting that backwards is one advertiser reading another's leads, which here means somebody else's customers' names, emails and phone numbers."
+  },
+
+  "sandbox": "none",
+  "$sandboxComment": "CHECKED. Meta's Lead Ads Testing Tool submits a TEST lead against a real form on a real Page, and it fires the real webhook -- which is a way to exercise the integration, not a test estate: the lead lands in the same place a real one does and is deleted by hand. There is no separate host, no separate account, and no mode flag on the request. So `none`, and the faker is the way to build against this.",
+  "sandboxNote": "Facebook Lead Ads has no sandbox. Meta's Lead Ads Testing Tool creates a test lead on the REAL form, which fires the real webhook and appears alongside real leads until somebody deletes it. Anything this reads is real customer data belonging to a real advertiser.",
+
+  "baseUrls": {
+    "live": "https://graph.facebook.com/v25.0"
+  },
+  "$baseUrlComment": "v25.0, not the newest. Meta supports a version for roughly two years -- v25.0 runs to 2028-07-29 -- and versioned changes land on the NEWEST version immediately and reach older ones later. So the newest buys a few months of runway and takes every breaking change first; v25.0 has been out since February and is the one with a long, quiet remainder. An unversioned call silently gets the OLDEST still-supported version, which is why the segment is pinned at all.",
+
+  "encoding": "json",
+
+  "credentialFields": [
+    {
+      "key": "clientId",
+      "label": "App ID",
+      "scope": "provider",
+      "secret": false,
+      "help": "From the Meta app dashboard. ONE value for the whole installation."
+    },
+    {
+      "key": "clientSecret",
+      "label": "App secret (OAuth)",
+      "scope": "provider",
+      "secret": true,
+      "help": "The same app's client secret, used to exchange the authorization code."
+    },
+    {
+      "key": "appSecret",
+      "label": "App secret (proof and webhook signature)",
+      "scope": "provider",
+      "secret": true,
+      "help": "TWO roles, one value. It keys the appsecret_proof HMAC on outgoing calls, and it is also what Meta signs INCOMING webhook deliveries with -- there is no per-endpoint webhook secret in the Graph API the way there is in Stripe. It is never sent in either direction. For a standard Meta app this is the same value as the OAuth client secret; it is declared separately because they are different roles, and an app that rotates one without the other should not silently break the other."
+    },
+    {
+      "key": "pageAccessToken",
+      "label": "Page access token",
+      "scope": "account",
+      "secret": true,
+      "help": "PER PAGE, not per user. Leads belong to a Page's forms, and Meta requires the token to be held by somebody who can advertise on the ad account. A long-lived page token lasts about 60 days and is re-authorised rather than refreshed."
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "$comment": "Meta's leadgen webhook, read from its Webhooks-for-Leadgen reference and its general webhook signing docs. This is the FIRST provider to exercise verification.header.format `prefixed` -- Stripe uses `compound`, and until now `prefixed` and `raw` were declared in the vocabulary and driven by nothing, which is the shape this repo keeps finding: a declaration that silently does nothing.",
+
+  "operation": "leadgen",
+  "kind": "webhook_trigger",
+  "title": "Facebook lead",
+  "description": "Start when somebody submits a Facebook lead form. The delivery carries only IDS -- pair this with the `lead_get` action to read the answers.",
+  "summary": "a new lead",
+  "icon": "◆",
+  "docs": "https://developers.facebook.com/docs/graph-api/webhooks/getting-started/webhooks-for-leadgen/",
+
+  "sideEffects": "none",
+  "delivery": "webhook",
+  "setup": "In the Meta app dashboard, add a Webhooks product, subscribe to the PAGE object and tick the `leadgen` field, and point the callback URL at the route your host mounts for this trigger. Meta first sends a GET carrying `hub.mode=subscribe`, `hub.verify_token` and `hub.challenge` -- the host must echo `hub.challenge` back as the body and check `hub.verify_token` against the value set in the dashboard, or the subscription is never activated. Then subscribe the app to each Page (`POST /{pageId}/subscribed_apps` with `subscribed_fields=leadgen`), which is a SEPARATE step: a webhook configured but not subscribed per Page delivers nothing and reports nothing.",
+
+  "verification": {
+    "signatureHeader": "X-Hub-Signature-256",
+    "algorithm": "SHA-256",
+    "encoding": "hex",
+    "payload": "{body}",
+    "$payloadComment": "The RAW bytes as received. Re-serialised JSON changes key order and whitespace and produces a mismatch indistinguishable from a wrong secret -- and Meta escapes non-ASCII in its payloads, so a body that round-trips through a parser comes back with different bytes for any lead whose name is not ASCII. That is a failure that only appears for some people's names.",
+    "header": {
+      "format": "prefixed",
+      "prefix": "sha256=",
+      "$comment": "Quoting Meta: the signature is included in the X-Hub-Signature-256 header 'preceded with sha256='. A comparison that forgets to strip the prefix never matches; one that strips it with a fixed offset breaks if Meta ever sends the older X-Hub-Signature (sha1=), which is seven characters rather than eight."
+    },
+    "secretCredential": "appSecret",
+    "$secretComment": "The APP SECRET, not a per-endpoint signing secret. Stripe mints one secret per endpoint so a leaked one exposes one endpoint; Meta signs every webhook for the app with the one value that also keys appsecret_proof. That is a real difference in blast radius and it is the provider's, not ours -- but it means rotating the app secret invalidates outgoing proofs and incoming signatures at the same instant, and a host that updates one credential field will have broken the other.",
+    "$timestampComment": "There is NO timestamp and therefore no tolerance. Meta sends none, so a captured delivery stays valid forever and replay protection cannot come from the signature -- it has to come from de-duplicating on leadgen_id. Stated here rather than left as an absence, because `tolerance` being missing looks like an oversight and is not."
+  },
+
+  "config": [
+    {
+      "type": "text",
+      "key": "formIds",
+      "label": "Form IDs",
+      "placeholder": "1234567890, 9876543210",
+      "description": "Comma separated. Leave blank to accept every form on every subscribed Page. A delivery whose form_id is not listed settles the trigger without starting the graph."
+    }
+  ],
+
+  "defaultConfig": { "mode": "auto" },
+
+  "outputShape": [
+    {
+      "path": "leadgen_id",
+      "type": "string",
+      "description": "The lead's id, and the ONLY way to reach the answers -- pass it to `lead_get`. Meta redelivers on failure, and there is no timestamp in the signature, so dedupe on this."
+    },
+    { "path": "page_id", "type": "string", "description": "The Page the form belongs to." },
+    { "path": "form_id", "type": "string", "description": "Which lead form was submitted. Branch on this when one Page runs several." },
+    { "path": "ad_id", "type": "string", "description": "The ad that produced the lead. Absent for an organic form submission." },
+    { "path": "adgroup_id", "type": "string", "description": "The ad set. Meta still calls it adgroup on this payload." },
+    { "path": "created_time", "type": "number", "description": "Unix seconds. When the person submitted, not when the delivery arrived." }
+  ]
+}

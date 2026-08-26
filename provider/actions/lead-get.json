@@ -1,0 +1,46 @@
+{
+  "$comment": "GET /{leadId}, read from Meta's Retrieving Leads guide. The webhook carries ids and nothing else, so this is the half that produces data a flow can act on -- and it is a separate node rather than being folded into the trigger, for the same reason Instagram's publish is two actions: it is what the API is, and a lead can also be fetched by id without any webhook having fired.",
+
+  "operation": "lead_get",
+  "kind": "lead",
+  "title": "Facebook lead",
+  "description": "Read one lead's answers by id. Pair this with the `leadgen` trigger, whose delivery carries only the id.",
+  "summary": "read a lead",
+  "docs": "https://developers.facebook.com/docs/marketing-api/guides/lead-ads/retrieving",
+  "sideEffects": "none",
+
+  "request": {
+    "method": "GET",
+    "path": "/{leadId}",
+    "encoding": "json",
+    "$pathComment": "A lead is addressed at the ROOT of the Graph API by its own id -- there is no /{formId}/leads/{leadId} route. Meta's ids are globally unique across object types, which is why /{id} works at all and why passing the wrong kind of id returns a different object rather than a 404."
+  },
+
+  "config": [
+    {
+      "type": "text",
+      "key": "leadId",
+      "label": "Lead ID",
+      "required": true,
+      "description": "From the `leadgen_id` on a `leadgen` delivery. It is not the form id and not the ad id -- both are also numeric, and passing one of those returns THAT object rather than an error.",
+      "send": { "in": "path", "as": "leadId", "value": "string" }
+    }
+  ],
+
+  "outputShape": [
+    { "path": "data.id", "type": "string", "description": "The lead id, echoed back." },
+    { "path": "data.created_time", "type": "string", "description": "ISO 8601 with an offset, e.g. 2026-08-24T09:15:00+0000. NOT the unix seconds the webhook sends for the same event." },
+    { "path": "data.ad_id", "type": "string", "description": "The ad that produced the lead. Absent for an organic submission." },
+    { "path": "data.form_id", "type": "string", "description": "Which lead form was submitted." },
+    {
+      "path": "data.field_data",
+      "type": "array",
+      "description": "The answers, as a LIST of { name, values } rather than a map — so `field_data.email` does not exist and reading one means finding the entry whose `name` matches. The names are the form's own field keys, which the advertiser chose, so they differ between forms on the same Page. `values` is an array even for a single-answer question."
+    }
+  ],
+
+  "contract": {
+    "sends": [],
+    "reads": ["id", "created_time", "ad_id", "form_id", "field_data"]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$comment": "What a leadgen delivery's VALUE object carries -- ids and a timestamp, and no answers at all. Reproduced exactly, because the whole point of this shape is that an author must discover on the canvas that the data needs a second call, rather than wiring {{ $json.email }} against a fake that helpfully invented one.",
+  "operation": "leadgen",
+
+  "values": {
+    "leadId": { "$fake": "digits", "length": 15 },
+    "$comment": "Drawn ONCE and bound before the response, so the id a flow reads here is the id it would pass to lead_get. Two independent draws would produce a delivery no dedupe could match against itself."
+  },
+
+  "response": {
+    "leadgen_id": { "$ref": "leadId" },
+    "page_id": { "$fake": "digits", "length": 15 },
+    "form_id": { "$fake": "digits", "length": 15 },
+    "ad_id": { "$fake": "digits", "length": 15 },
+    "adgroup_id": { "$fake": "digits", "length": 15 },
+    "created_time": 1787577300
+  }
+}
