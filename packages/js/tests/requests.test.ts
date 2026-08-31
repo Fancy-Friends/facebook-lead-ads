@@ -62,7 +62,10 @@ test("lead_get sends GET /{leadId}", async () => {
 
   assert.deepEqual(
     Object.fromEntries(new URL(seen[0]!.url).searchParams),
-    {},
+    {
+      "access_token": "test_pageAccessToken",
+      "appsecret_proof": "0402e1e3ee2082f93c40ea238d579f317035ebf552a0fc196323579fc4881a81"
+    },
   );
 });
 
