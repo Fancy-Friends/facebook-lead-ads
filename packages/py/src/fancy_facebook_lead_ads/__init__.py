@@ -22,7 +22,7 @@ from .faker import respond
 from .service import BASE_URLS, CONNECTOR_API_VERSION, REQUIRES, SANDBOX, SERVICE, TITLE, descriptor
 from .triggers import leadgen
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "BASE_URLS",
