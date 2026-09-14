@@ -1,5 +1,7 @@
 # Facebook Lead Ads
 
+[![Fancified](art/fancified.svg)](https://particle.academy)
+
 Facebook Lead Ads for [fancy-flow][flow] — as **four imported, versioned packages**, one
 per runtime. Not vendored source: a copy cannot be upgraded, and third-party APIs
 change.
