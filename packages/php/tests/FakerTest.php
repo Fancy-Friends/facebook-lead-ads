@@ -30,6 +30,12 @@ it('lead_get fakes the shape Facebook Lead Ads publishes', function () {
 
     $faked = FacebookLeadAdsFaker::respond('lead_get', ['config' => $config, 'fake' => $fake]);
 
+    // Through JSON and back, because a faked EMPTY object is a stdClass — the only
+    // PHP value that spells `{}` on the wire — and `toBe` compares objects by
+    // identity. This asserts the VALUES; the `{}`-versus-`[]` spelling is what
+    // weaver's cross-runtime parity suite asserts, byte for byte.
+    $faked = json_decode((string) json_encode($faked), true, 512, JSON_THROW_ON_ERROR);
+
     expect($faked)->toBe([
         'id' => '191900457289918',
         'created_time' => '2026-08-24T09:15:00+0000',
@@ -69,6 +75,12 @@ it('leadgen fakes the shape Facebook Lead Ads publishes', function () {
     $fake = new FakeValues(FakeValues::seedForCall('facebook_lead_ads', 'leadgen', $config));
 
     $faked = FacebookLeadAdsFaker::respond('leadgen', ['config' => $config, 'fake' => $fake]);
+
+    // Through JSON and back, because a faked EMPTY object is a stdClass — the only
+    // PHP value that spells `{}` on the wire — and `toBe` compares objects by
+    // identity. This asserts the VALUES; the `{}`-versus-`[]` spelling is what
+    // weaver's cross-runtime parity suite asserts, byte for byte.
+    $faked = json_decode((string) json_encode($faked), true, 512, JSON_THROW_ON_ERROR);
 
     expect($faked)->toBe([
         'leadgen_id' => '468953268954264',

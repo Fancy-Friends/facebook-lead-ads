@@ -50,7 +50,7 @@ final class FacebookLeadAdsFaker
     }
 
     /** @param array<string,mixed> $config */
-    private static function LeadGet(array $config, mixed $fake): array
+    private static function LeadGet(array $config, mixed $fake): array|\stdClass
     {
         return [
         'id' => implode('', array_map(static fn (): int => $fake->int(0, 9), range(1, 15))),
@@ -87,7 +87,7 @@ final class FacebookLeadAdsFaker
     }
 
     /** @param array<string,mixed> $config */
-    private static function Leadgen(array $config, mixed $fake): array
+    private static function Leadgen(array $config, mixed $fake): array|\stdClass
     {
         $boundLeadid = implode('', array_map(static fn (): int => $fake->int(0, 9), range(1, 15)));
 
