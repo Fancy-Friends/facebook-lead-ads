@@ -47,7 +47,7 @@ def parse_signature(raw: str) -> tuple[str | None, str | None]:
     """Strip the `sha256=` prefix the provider sends."""
     prefix = "sha256="
 
-    return (raw[len(prefix):] if raw.startswith(prefix) else raw), None
+    return (raw[len(prefix):] if raw.startswith(prefix) else None), None
 
 
 def signed_payload(raw: str, timestamp: str | None) -> str:
