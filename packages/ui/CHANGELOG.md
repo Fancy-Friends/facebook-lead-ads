@@ -8,6 +8,18 @@ The four packages share one version, because they are generated from one
 `provider/` definition and a version that meant something different in each
 would be a version nobody could reason about.
 
+## [0.1.4] — 2026-10-31
+
+### Fixed
+
+- **An `X-Hub-Signature-256` header without its `sha256=` prefix is now
+  REFUSED**, in all three runtimes. The parsers stripped the prefix when it
+  was present and used the bare value otherwise, so the right HMAC digest with
+  no prefix verified. It was never a forgery path, because the digest still
+  had to match, but a header not in Meta's format is not Meta's header. Meta
+  always sends the prefix, so no genuine delivery is affected. Now driven in
+  TypeScript as well as PHP and Python.
+
 ## [0.1.3] — 2026-09-12
 
 ### Changed

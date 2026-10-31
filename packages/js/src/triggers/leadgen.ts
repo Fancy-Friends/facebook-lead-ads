@@ -28,9 +28,9 @@ export const FACEBOOK_LEAD_ADS_LEADGEN_SCHEME: HmacScheme = {
   encoding: "hex",
 };
 
-/** Strip the `sha256=` prefix the provider sends. */
+/** Strip the `sha256=` prefix the provider sends. Without it, there is no signature. */
 export function parseFacebookLeadAdsSignature(raw: string): { signature?: string } {
-  return { signature: raw.startsWith("sha256=") ? raw.slice(7) : raw };
+  return raw.startsWith("sha256=") ? { signature: raw.slice(7) } : {};
 }
 
 export const FACEBOOK_LEAD_ADS_LEADGEN: TriggerDescriptor = {

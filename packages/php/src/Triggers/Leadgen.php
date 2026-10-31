@@ -43,7 +43,7 @@ final class Leadgen
         $prefix = 'sha256=';
 
         return [
-            'signature' => str_starts_with($raw, $prefix) ? substr($raw, strlen($prefix)) : $raw,
+            'signature' => str_starts_with($raw, $prefix) ? substr($raw, strlen($prefix)) : null,
             'timestamp' => null,
         ];
     }
