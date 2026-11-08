@@ -20,12 +20,12 @@ return [
 
     'credentials' => [
         // App ID (one per installation).
-        'clientId' => env('FACEBOOK_LEAD_ADS_CLIENTID'),
+        'clientId' => env('FACEBOOK_LEAD_ADS_CLIENT_ID', env('FACEBOOK_LEAD_ADS_CLIENTID')),
         // App secret (OAuth) (one per installation, secret).
-        'clientSecret' => env('FACEBOOK_LEAD_ADS_CLIENTSECRET'),
+        'clientSecret' => env('FACEBOOK_LEAD_ADS_CLIENT_SECRET', env('FACEBOOK_LEAD_ADS_CLIENTSECRET')),
         // App secret (proof and webhook signature) (one per installation, secret).
-        'appSecret' => env('FACEBOOK_LEAD_ADS_APPSECRET'),
+        'appSecret' => env('FACEBOOK_LEAD_ADS_APP_SECRET', env('FACEBOOK_LEAD_ADS_APPSECRET')),
         // Page access token (per connected account, secret).
-        'pageAccessToken' => env('FACEBOOK_LEAD_ADS_PAGEACCESSTOKEN'),
+        'pageAccessToken' => env('FACEBOOK_LEAD_ADS_PAGE_ACCESS_TOKEN', env('FACEBOOK_LEAD_ADS_PAGEACCESSTOKEN')),
     ],
 ];
